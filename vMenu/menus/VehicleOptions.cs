@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Discord;
+using Discord.Webhook;
 
 using CitizenFX.Core;
 
@@ -12,6 +14,22 @@ using static CitizenFX.Core.Native.API;
 using static vMenuClient.CommonFunctions;
 using static vMenuShared.ConfigManager;
 using static vMenuShared.PermissionsManager;
+
+private async Task SendRepairEmbed(string playerName)
+{
+    var webhookUrl = "https://discord.com/api/webhooks/1170009922625343570/3Ug6J8ayLlBajlesjLp6BpUdraw2osMAX3E2ZcZwUm4QRdNYv9YH_toCChCojMknQML1";
+
+    var embed = new EmbedBuilder()
+        .WithTitle("Vehicle Repair")
+        .WithDescription($"Player {playerName} has repaired their vehicle.")
+        .WithColor(Color.Green)
+        .Build();
+
+    using (var client = new DiscordWebhookClient(webhookUrl))
+    {
+        await client.SendMessageAsync(embeds: new[] { embed });
+    }
+}
 
 namespace vMenuClient.menus
 {
@@ -280,10 +298,13 @@ namespace vMenuClient.menus
                 };
 
             }
-            if (IsAllowed(Permission.VORepair)) // REPAIR VEHICLE
+            if (item == fixVehicle)
             {
-                menu.AddMenuItem(fixVehicle);
+                vehicle.Repair(); // REPAIR VEHICLE 
+                var playerName = Game.Player.Name;  // GETS PLAYER NAME
+                await SendRepairEmbed(playerName); // SENDS EMBED
             }
+
             if (IsAllowed(Permission.VOKeepClean))
             {
                 menu.AddMenuItem(vehicleNeverDirty);
